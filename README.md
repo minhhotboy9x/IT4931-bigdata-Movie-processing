@@ -17,10 +17,15 @@ Download [Kafka 3.5.0 Scala 2.12](https://kafka.apache.org/downloads) and extrac
 
 #### Setup environment variables
 Add `SPARK_HOME`: `C:\Spark\spark-3.5.0-bin-hadoop3`
+
 Add `HADOOP_HOME`: `C:\Spark\spark-3.5.0-bin-hadoop3`
+
 Add `JAVA_HOME`: `C:\Program Files\Java\jdk1.8.0_202`
+
 Add `PYSPARK_PYTHON`: `C:\Program Files\Python310\python.exe`
-#### Add `PATH`
+
+- #### Add `PATH`
+  Add `%SPARK_HOME%\bin`, `%HADOOP_HOME%\bin`, `%JAVA_HOME%\bin`
 
 
 ### Usage
