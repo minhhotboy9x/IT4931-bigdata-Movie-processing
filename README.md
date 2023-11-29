@@ -29,4 +29,13 @@ Add `PYSPARK_PYTHON`: `C:\Program Files\Python310\python.exe`
 
 
 ### Usage
-Start the master and worker
+Start the master:
+```
+cd %SPARK_HOME%
+bin\spark-class2.cmd org.apache.spark.deploy.master.Master
+```
+Start the wokers: (run this cmd multiple times for multiple workers)
+```
+cd %SPARK_HOME%
+bin\spark-class2.cmd org.apache.spark.deploy.worker.Worker <master url>
+```
