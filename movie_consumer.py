@@ -1,82 +1,70 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructField, StructType, StringType, LongType, \
-                                FloatType, IntegerType, DoubleType, DecimalType, \
-                                ArrayType, BooleanType, DateType
-from pyspark.sql.functions import explode, col, udf
-from pyspark.sql.functions import split, expr
-from crawler import MovieDataset, MovieDB
-import os
-import json
+from schema import MOVIE_SCHEMA, GENRE_SCHEMA
+from pyspark.sql.functions import explode, col, from_json, current_timestamp, expr, udf
+from pyspark.sql.types import StringType, ArrayType
+import os, json
+from dotenv import load_dotenv
 
+load_dotenv()
 scala_version = '2.12'
 spark_version = '3.5.0'
-# TODO: Ensure match above values match the correct versions
-# os.environ['PYSPARK_SUBMIT_ARGS'] ="--master local[*] pyspark-shell"
+MASTER = 'local'
+KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
+MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
+genre_path = 'genres.json'
+
+with open('genres.json', 'r') as f:
+    genre_names = json.loads(f.read())
+
+genre_names = {item['id']: item['name'] for item in genre_names}
+
 packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
     'org.apache.hadoop:hadoop-client:3.0.0',
 ]
-# Tạo một phiên Spark
-spark = SparkSession.builder \
-   .master("local") \
-   .appName("Movie Consumer") \
-   .getOrCreate()
 
+spark = SparkSession.builder \
+    .master("local") \
+    .appName("Movie Consumer") \
+    .config("spark.jars.packages", ",".join(packages)) \
+    .getOrCreate()
 spark.sparkContext.setLogLevel("ERROR")
 
-@udf(ArrayType(StringType()))
-def map_genre_names(genre_ids):
-    genre_names = [row['name'] for row in df_genre.collect() if row['genre_id'] in genre_ids]
-    return genre_names
 
-# Define the schema
-movie_schema = StructType([
-    StructField("id", StringType(), nullable=False),
-    StructField("adult", BooleanType(), nullable=False),
-    StructField("genre_ids", ArrayType(IntegerType()), nullable=True),
-    StructField("original_language", StringType(), nullable=True),
-    StructField("overview", StringType(), nullable=True),
-    StructField("popularity", DoubleType(), nullable=True),
-    StructField("release_date", StringType(), nullable=True),
-    StructField("title", StringType(), nullable=True),
-    StructField("vote_average", StringType(), nullable=True),
-    StructField("vote_count", IntegerType(), nullable=True),
-])
+# Broadcast bảng genre để sử dụng như một biến
+genre_mapping = spark.sparkContext.broadcast(genre_names)
 
-genre_schema = StructType([
-    StructField("id", IntegerType(), nullable=True),
-    StructField("name", StringType(), nullable=True)
-])
+def map_genre_ids_to_names(genre_ids):
+    return [genre_mapping.value.get(gid, None) for gid in genre_ids]
 
+# Định nghĩa hàm UDF từ hàm Python
+spark.udf.register("map_genre_ids_to_names", map_genre_ids_to_names, ArrayType(StringType()))
 
-# Get movie data
-movies = MovieDB()
-mv_json = movies.get_movies(page=1)
+# Read streaming data with watermark
+df_msg = spark \
+    .readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", KAFKA_BROKER1) \
+    .option("subscribe", MOVIE_TOPIC) \
+    .option("startingOffsets", "earliest") \
+    .load()
 
-# Create DataFrame
-df_movie = spark.createDataFrame(mv_json, schema=movie_schema)
+# df_msg.printSchema()
+df_msg = df_msg.selectExpr("CAST(value AS STRING)", "timestamp") \
+                .select(from_json("value", MOVIE_SCHEMA).alias('movie'))
 
-df_genre = spark.createDataFrame(movies.genres, schema=genre_schema)
+# Extract movie information
+df_movie = df_msg.select('movie.*')
 
-df_genre.createOrReplaceTempView("df_genre")
+# Convert vote_average to float
+df_movie = df_movie.withColumn("genres", expr("map_genre_ids_to_names(genre_ids)"))
 
-df_movie = df_movie.withColumn("vote_average", col("vote_average").cast("float"))
+df_movie = df_movie.drop('genre_ids')
 
-# Explode the genre_ids array
-df_exploded = df_movie.select(col("id").alias("id_mv"), "genre_ids").withColumn("genre_id", explode("genre_ids"))
+query = df_movie.writeStream \
+    .outputMode("append") \
+    .format("console") \
+    .start()
 
-# Join with df_genre to get genre_names
-df_result = df_exploded.join(df_genre, df_exploded["genre_id"] == df_genre["id"]) \
-        .withColumnRenamed('genre_id', '_genre_id')  \
-        .groupBy("id_mv").agg({"name": "collect_list"})
-
-# Rename the column
-df_result = df_result.withColumnRenamed("collect_list(name)", "genres")
-
-# Join the result back to the original dataframe
-df_movie = df_movie.join(df_result, df_movie['id'] == df_result['id_mv'] , "left")
-
-df_movie = df_movie.drop("genre_ids").drop("id_mv")
-
-df_movie.show()
+query.awaitTermination()

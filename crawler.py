@@ -36,7 +36,7 @@ class MovieDB:
             "accept": "application/json",
             "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3M2ZkOTg0MmMzMTg2ZDY2OWMxNmEwNmIzYTdjODA2OCIsInN1YiI6IjY1M2IyMzFlMTA5Y2QwMDEyY2ZlMWU2NCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.5nkctErbJj6FNm__3T8rX1iFXSFw5Qasd3JOXqGOKYU"
         }
-        self.genres = self.get_genres()
+        # self.genres = self.get_genres()
 
     def get_actors(self, page=1):
         url_actors = self.url + f"/person/popular?page={page}"
@@ -65,6 +65,7 @@ class MovieDB:
 if __name__ == "__main__":
     movies = MovieDB()
     mv_json = movies.get_movies()
+
     for mv in mv_json:
         # print(mv.get('ratingsSummary'))
         print(json.dumps(mv, indent=2))
