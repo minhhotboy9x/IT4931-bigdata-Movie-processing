@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 load_dotenv()
 scala_version = '2.12'
 spark_version = '3.5.0'
-MASTER = 'local'
+# MASTER = 'local'
+MASTER = 'spark://192.168.137.1:7077'
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
 genre_path = 'genres.json'
@@ -25,9 +26,10 @@ packages = [
 ]
 
 spark = SparkSession.builder \
-    .master("local") \
+    .master(MASTER) \
     .appName("Movie Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
+    .config("spark.driver.maxResultSize", "4g") \
     .getOrCreate()
 spark.sparkContext.setLogLevel("ERROR")
 

@@ -69,4 +69,3 @@ if __name__ == "__main__":
     for mv in mv_json:
         # print(mv.get('ratingsSummary'))
         print(json.dumps(mv, indent=2))
-        break

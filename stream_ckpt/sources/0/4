@@ -1,0 +1,3 @@
+v1
+{"path":"file:///D:/IT4931-bigdata-Movie-processing/temp/movie_temp.parquet/part-00000-a76f6def-6284-465a-8fb8-88367efee97c-c000.snappy.parquet","timestamp":1701399247249,"batchId":4}
+{"path":"file:///D:/IT4931-bigdata-Movie-processing/temp/movie_temp.parquet/part-00001-a76f6def-6284-465a-8fb8-88367efee97c-c000.snappy.parquet","timestamp":1701399247249,"batchId":4}
