@@ -1,0 +1,111 @@
+version: '3'
+services:
+  spark-master:
+    image: bitnami/spark:3.5
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOSTNAME=spark-master
+      - SPARK_MASTER_PORT=7077
+    ports:
+      - "4040:4040"
+      - "6066:6066"
+      - "7077:7077"
+      - "8080:8080"
+    # command: bin/spark-class org.apache.spark.deploy.master.Master
+    volumes:
+      - ../app:/opt/spark-applications
+    networks:
+      - spark-network
+
+  spark-worker-1:
+    image: bitnami/spark:3.5
+    container_name: spark-worker-1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY = 3g
+      - SPARK_WORKER_CORES = 2
+      - PYSPARK_PYTHON=/opt/bitnami/python/bin/python3
+    ports:
+      - "8081:8081"
+    deploy:
+      resources:
+        limits:
+          cpus: "2" # Adjust as needed
+          memory: 4G  # Adjust as needed
+    depends_on:
+      - spark-master
+    networks:
+      - spark-network
+
+  spark-worker-2:
+    image: bitnami/spark:3.5
+    container_name: spark-worker-2
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY = 3g
+      - SPARK_WORKER_CORES = 2
+    deploy:
+      resources:
+        limits:
+          cpus: "2" # Adjust as needed
+          memory: 4G  # Adjust as needed
+    depends_on:
+      - spark-master
+    networks:
+      - spark-network
+
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    container_name: zookeeper-server
+    hostname: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - spark-network
+
+  kafka1:
+    image: bitnami/kafka:3.5
+    container_name: broker-1
+    hostname: broker-1
+    ports:
+      - "9093:9093"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9093,INTERNAL://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9093,INTERNAL://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+    depends_on:
+      - zookeeper
+    networks:
+      - spark-network
+
+  kafka2:
+    image: bitnami/kafka:3.5
+    container_name: broker-2
+    hostname: broker-2
+    ports:
+      - "9094:9094"
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9094,INTERNAL://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9094,INTERNAL://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+    depends_on:
+      - zookeeper
+    networks:
+      - spark-network
+  
+networks:
+  spark-network:
+    driver: bridge
