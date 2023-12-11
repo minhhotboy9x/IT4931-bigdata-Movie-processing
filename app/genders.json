@@ -1,0 +1,18 @@
+[
+    {
+      "id": 0,
+      "name": "Not specified"
+    },
+    {
+    "id": 1,
+    "name": "Female"
+    },
+    {
+    "id": 2,
+    "name": "Male"
+    },
+    {
+    "id": 3,
+    "name": "Non-binary"
+    }
+]
