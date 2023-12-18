@@ -13,7 +13,24 @@ MASTER = 'local'
 # MASTER = 'spark://172.28.240.1:7077'
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 ACTOR_TOPIC= os.environ["ACTOR_TOPIC"]
+ES_NODES = os.environ['ES_NODES']
+ES_RESOURCE = "actor"
 gender_path = 'genders.json'
+
+#----------------------------------------------
+
+def write_to_elasticsearch(df, epoch_id):
+    df.show()
+    df.write \
+        .format("org.elasticsearch.spark.sql") \
+        .option("es.nodes", ES_NODES) \
+        .option("es.resource", ES_RESOURCE) \
+        .option("es.index.auto.create", "true") \
+        .option("es.nodes.wan.only", "true") \
+        .mode("append") \
+        .save(ES_RESOURCE)
+    
+#----------------------------------------------
 
 with open(gender_path, 'r') as f:
     gender_names = json.loads(f.read())
@@ -24,6 +41,7 @@ packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
     'org.apache.hadoop:hadoop-client:3.0.0',
+    'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16'
 ]
 
 spark = SparkSession.builder \
@@ -31,6 +49,7 @@ spark = SparkSession.builder \
     .appName("Movie Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
     .config("spark.cores.max", "2") \
+    .config("spark.executor.memory", "2g") \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("Error")
@@ -61,7 +80,7 @@ df_actor = df_actor.withColumn('gender', expr("map_gender_id_to_name(gender)"))
 
 query = df_actor.writeStream \
     .outputMode("append") \
-    .format("console") \
+    .foreachBatch(write_to_elasticsearch) \
     .start()
 
 query.awaitTermination()

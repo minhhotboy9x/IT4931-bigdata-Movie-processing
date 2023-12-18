@@ -25,7 +25,7 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY = 3g
+      - SPARK_WORKER_MEMORY = 2g
       - SPARK_WORKER_CORES = 2
       - PYSPARK_PYTHON=/opt/bitnami/python/bin/python3
     ports:
@@ -34,7 +34,7 @@ services:
       resources:
         limits:
           cpus: "2" # Adjust as needed
-          memory: 4G  # Adjust as needed
+          memory: 2G  # Adjust as needed
     depends_on:
       - spark-master
     networks:
@@ -46,13 +46,13 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY = 3g
+      - SPARK_WORKER_MEMORY = 2g
       - SPARK_WORKER_CORES = 2
     deploy:
       resources:
         limits:
           cpus: "2" # Adjust as needed
-          memory: 4G  # Adjust as needed
+          memory: 2G  # Adjust as needed
     depends_on:
       - spark-master
     networks:
@@ -106,6 +106,35 @@ services:
     networks:
       - spark-network
   
+  elasticsearch:
+    container_name: es-container
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.16
+    hostname: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - xpack.security.enabled = false
+      - xpack.security.enrollment.enabled = false
+    networks:
+      - spark-network
+    ports:
+      - 9200:9200
+    volumes:
+      - ../elasticsearch-data:/usr/share/elasticsearch/data
+      
+  kibana:
+    container_name: kb-container
+    image: docker.elastic.co/kibana/kibana:7.17.16
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    networks:
+      - spark-network
+    depends_on:
+      - elasticsearch
+    
+
 networks:
   spark-network:
     driver: bridge
