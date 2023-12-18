@@ -27,9 +27,11 @@ def write_to_elasticsearch(df, epoch_id):
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
         .option("es.resource", ES_RESOURCE) \
+        .option("es.mapping.id", "id") \
+        .option("es.write.operation", "upsert") \
         .option("es.index.auto.create", "true") \
         .option("es.nodes.wan.only", "true") \
-        .mode("overwrite") \
+        .mode("append") \
         .save(ES_RESOURCE)
 
 # ----------------------------------------------------------

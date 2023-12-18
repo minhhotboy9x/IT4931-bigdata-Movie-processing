@@ -37,7 +37,7 @@ movie = MovieDB()
 mv_data = []
 
 # produce
-for i in range(1, 10):
+for i in range(20, 40):
     print(i)
     print('________________')
     mv_data = movie.get_movies(page=i)
