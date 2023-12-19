@@ -37,11 +37,12 @@ movie = MovieDB()
 mv_data = []
 
 # produce
-for i in range(20, 40):
+for i in range(1, 10):
     print(i)
     print('________________')
     mv_data = movie.get_movies(page=i)
     df = spark.createDataFrame(mv_data, MOVIE_SCHEMA)
+    df.show()
     query = df.selectExpr("CAST(id AS STRING)", "to_json(struct(*)) AS value") \
         .write \
         .format("kafka") \

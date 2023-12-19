@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from schema import MOVIE_SCHEMA, GENRE_SCHEMA
-from pyspark.sql.functions import to_timestamp, from_json, expr, to_date, current_timestamp
+from pyspark.sql.functions import year, from_json, expr, to_date, col
 from pyspark.sql.types import StringType, ArrayType
 import os, json
 from dotenv import load_dotenv
@@ -16,13 +16,11 @@ MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
 ES_NODES = os.environ['ES_NODES']
 ES_RESOURCE = "movie"
 genre_path = 'genres.json'
-# ------------------------------------------------------------
 
-def map_genre_ids_to_names(genre_ids):
-    return [genre_names.get(gid, None) for gid in genre_ids]
+# -----------------------------------------------------------
 
 def write_to_elasticsearch(df, epoch_id):
-    df.show()
+    df.select("id", "production_companies").show()
     df.write \
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
@@ -35,12 +33,6 @@ def write_to_elasticsearch(df, epoch_id):
         .save(ES_RESOURCE)
 
 # ----------------------------------------------------------
-    
-with open(genre_path, 'r') as f:
-    genre_names = json.loads(f.read())
-
-genre_names = {item['id']: item['name'] for item in genre_names}
-
 packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
@@ -58,21 +50,17 @@ spark = SparkSession.builder \
 
 spark.sparkContext.setLogLevel("Error")
 
-
-# Định nghĩa hàm UDF từ hàm Python
-spark.udf.register("map_genre_ids_to_names", map_genre_ids_to_names, ArrayType(StringType()))
-
 # Read streaming data with watermark
 df_msg = spark \
     .readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", KAFKA_BROKER1) \
     .option("subscribe", MOVIE_TOPIC) \
-    .option("startingOffsets", "earliest") \
+    .option("startingOffsets", "latest") \
     .load()
 
 # df_msg.printSchema()
-df_msg = df_msg.selectExpr("CAST(value AS STRING)", "timestamp") \
+df_msg = df_msg.selectExpr("CAST(value AS STRING)") \
                 .select(from_json("value", MOVIE_SCHEMA).alias('movie'))
 
 # Extract movie information
@@ -81,12 +69,18 @@ df_movie = df_msg.select('movie.*')
 # Convert vote_average and popularity to float
 df_movie = df_movie.withColumn("popularity", expr("cast(popularity as double)"))
 df_movie = df_movie.withColumn("vote_average", expr("cast(vote_average as double)"))
+df_movie = df_movie.withColumn("budget", expr("cast(budget as double)"))
+df_movie = df_movie.withColumn("revenue", expr("cast(revenue as double)"))
+df_movie = df_movie.withColumn("runtime", expr("cast(runtime as double)"))
 
-df_movie = df_movie.withColumn("genres", expr("map_genre_ids_to_names(genre_ids)"))
 
-df_movie = df_movie.withColumn("release_date", to_date("release_date", "yyyy-MM-dd"))
+df_movie = df_movie.withColumn("genres", col("genres.name"))
+df_movie = df_movie.withColumn("production_companies", 
+            expr("TRANSFORM(production_companies, x -> struct(x.name, x.origin_country))"))
+df_movie = df_movie.withColumn("production_countries", col("production_countries.name"))
 
-df_movie = df_movie.drop('genre_ids')
+df_movie = df_movie.withColumn("release_year", year(to_date("release_date", "yyyy-MM-dd")))
+
 
 query = df_movie.writeStream \
     .outputMode("append") \

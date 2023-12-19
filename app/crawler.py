@@ -34,13 +34,22 @@ class MovieDB:
             "vote_count.gte": 1000,
         }
         response = requests.get(url_movies, headers=self.headers, params=querystring)
-        return response.json()['results']
+        movies_list = response.json()["results"]
+        res = []
+        for movie in movies_list:
+            url_detail = self.url + f"/movie/{movie['id']}"
+            query_detail= {
+                "language": "en-US"
+            }
+            response = requests.get(url_detail, headers=self.headers, params=query_detail)
+            res.append(response.json())
+        return res
 
 
 if __name__ == "__main__":
     movies = MovieDB()
-    mv_json = movies.get_actors()
-
-    for mv in mv_json:
-        # print(mv.get('ratingsSummary'))
-        print(json.dumps(mv, indent=2))
+    mv_json = movies.get_movies()
+    print(json.dumps( mv_json, indent=2))
+    # for mv in mv_json:
+    #     # print(mv.get('ratingsSummary'))
+    #     print(json.dumps(mv, indent=2))
