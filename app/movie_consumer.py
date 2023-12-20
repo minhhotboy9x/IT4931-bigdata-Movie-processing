@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from schema import MOVIE_SCHEMA, GENRE_SCHEMA
-from pyspark.sql.functions import year, from_json, expr, to_date, col
+from pyspark.sql.functions import year, from_json, expr, to_date, col, when
 from pyspark.sql.types import StringType, ArrayType
 import os, json
 from dotenv import load_dotenv
@@ -80,7 +80,9 @@ df_movie = df_movie.withColumn("production_companies",
 df_movie = df_movie.withColumn("production_countries", col("production_countries.name"))
 
 df_movie = df_movie.withColumn("release_year", year(to_date("release_date", "yyyy-MM-dd")))
-
+df_movie = df_movie.withColumn(
+        "profit_ratio",
+        when(col("budget") > 0, (col("revenue") - col("budget")) / col("budget")).otherwise(None))
 
 query = df_movie.writeStream \
     .outputMode("append") \

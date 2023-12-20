@@ -11,6 +11,11 @@ MOVIE_SCHEMA = StructType([
             StructField("name", StringType(), True)
         ])
     ), nullable=True),
+    StructField("belongs_to_collection", 
+        StructType([
+            StructField("id", IntegerType(), True),
+            StructField("name", StringType(), True)
+        ]), nullable=True),
     StructField("original_language", StringType(), nullable=True),
     StructField("overview", StringType(), nullable=True),
     StructField("popularity", StringType(), nullable=True),
