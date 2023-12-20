@@ -31,7 +31,7 @@ class MovieDB:
             "language": "en-US",
             "page": page,
             "primary_release_date.gte": primary_release_date_gt,
-            "vote_count.gte": 1000,
+            "vote_count.gte": 0,
         }
         response = requests.get(url_movies, headers=self.headers, params=querystring)
         movies_list = response.json()["results"]
@@ -48,7 +48,7 @@ class MovieDB:
 
 if __name__ == "__main__":
     movies = MovieDB()
-    mv_json = movies.get_movies()
+    mv_json = movies.get_movies(page=191)
     print(json.dumps( mv_json, indent=2))
     # for mv in mv_json:
     #     # print(mv.get('ratingsSummary'))
