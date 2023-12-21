@@ -48,7 +48,7 @@ class MovieDB:
 
 if __name__ == "__main__":
     movies = MovieDB()
-    mv_json = movies.get_movies(page=191)
+    mv_json = movies.get_movies(page=501)
     print(json.dumps( mv_json, indent=2))
     # for mv in mv_json:
     #     # print(mv.get('ratingsSummary'))

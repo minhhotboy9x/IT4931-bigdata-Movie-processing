@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 scala_version = '2.12'
 spark_version = '3.5.0'
-MASTER = 'local'
+MASTER = os.environ["MASTER"]
 # MASTER = 'spark://spark-master:7077'
 # MASTER = 'spark://172.28.240.1:7077'
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
@@ -25,6 +25,8 @@ def write_to_elasticsearch(df, epoch_id):
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
         .option("es.resource", ES_RESOURCE) \
+        .option("es.mapping.id", "id") \
+        .option("es.write.operation", "upsert") \
         .option("es.index.auto.create", "true") \
         .option("es.nodes.wan.only", "true") \
         .mode("append") \
@@ -46,7 +48,7 @@ packages = [
 
 spark = SparkSession.builder \
     .master(MASTER) \
-    .appName("Movie Consumer") \
+    .appName("Actor Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
     .config("spark.cores.max", "2") \
     .config("spark.executor.memory", "2g") \
@@ -66,7 +68,7 @@ df_msg = spark \
     .format("kafka") \
     .option("kafka.bootstrap.servers", KAFKA_BROKER1) \
     .option("subscribe", ACTOR_TOPIC) \
-    .option("startingOffsets", "earliest") \
+    .option("startingOffsets", "latest") \
     .load()
 
 # df_msg.printSchema()

@@ -8,7 +8,7 @@ import requests
 load_dotenv()
 scala_version = '2.12'
 spark_version = '3.5.0'
-MASTER = 'local'
+MASTER = os.environ["MASTER"]
 # MASTER = 'spark://192.168.137.1:7077'
 # MASTER = 'spark://172.28.240.1:7077'
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]

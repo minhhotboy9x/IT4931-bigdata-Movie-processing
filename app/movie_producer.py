@@ -10,7 +10,7 @@ scala_version = '2.12'
 spark_version = '3.5.0'
 # MASTER = 'spark://172.28.240.1:7077'
 # MASTER = 'spark://192.168.137.1:7077'
-MASTER = 'local'
+MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
 
@@ -46,6 +46,6 @@ for i in range(1, 10):
     query = df.selectExpr("CAST(id AS STRING)", "to_json(struct(*)) AS value") \
         .write \
         .format("kafka") \
-        .option("kafka.bootstrap.servers", "127.0.0.1:9093") \
+        .option("kafka.bootstrap.servers", KAFKA_BROKER1) \
         .option("topic", MOVIE_TOPIC) \
         .save()

@@ -10,7 +10,7 @@ scala_version = '2.12'
 spark_version = '3.5.0'
 # MASTER = 'spark://172.28.240.1:7077'
 # MASTER = 'spark://192.168.137.1:7077'
-MASTER = 'local'
+MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 ACTOR_TOPIC = os.environ["ACTOR_TOPIC"]
 
@@ -25,7 +25,7 @@ packages = [
 
 spark = SparkSession.builder \
    .master(MASTER) \
-   .appName("Movie Producer") \
+   .appName("Actor Producer") \
    .config("spark.jars.packages", ",".join(packages)) \
    .config("spark.cores.max", "2") \
    .config("spark.executor.memory", "2g") \
@@ -42,9 +42,11 @@ for i in range(1, 10):
     print('________________')
     mv_data = movie.get_actors(page=i)
     df = spark.createDataFrame(mv_data, ACTOR_SCHEMA)
+    df.show()
     query = df.selectExpr("CAST(id AS STRING)", "to_json(struct(*)) AS value") \
         .write \
         .format("kafka") \
         .option("kafka.bootstrap.servers", KAFKA_BROKER1) \
         .option("topic", ACTOR_TOPIC) \
+        .option("kafka.acks", "all") \
         .save()
