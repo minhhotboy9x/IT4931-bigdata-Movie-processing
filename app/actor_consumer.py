@@ -43,15 +43,16 @@ packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
     'org.apache.hadoop:hadoop-client:3.0.0',
-    'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16'
+    'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16',
+    "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
 ]
 
 spark = SparkSession.builder \
     .master(MASTER) \
     .appName("Actor Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
-    .config("spark.cores.max", "2") \
-    .config("spark.executor.memory", "2g") \
+    .config("spark.cores.max", "1") \
+    .config("spark.executor.memory", "1g") \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("Error")

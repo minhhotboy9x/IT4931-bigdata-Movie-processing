@@ -25,16 +25,16 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY = 2g
-      - SPARK_WORKER_CORES = 2
+      - SPARK_WORKER_MEMORY = 5g
+      - SPARK_WORKER_CORES = 5
       - PYSPARK_PYTHON=/opt/bitnami/python/bin/python3
     ports:
       - "8081:8081"
     deploy:
       resources:
         limits:
-          cpus: "2" # Adjust as needed
-          memory: 2G  # Adjust as needed
+          cpus: "5" # Adjust as needed
+          memory: 5G  # Adjust as needed
     depends_on:
       - spark-master
     networks:

@@ -27,8 +27,8 @@ spark = SparkSession.builder \
    .master(MASTER) \
    .appName("Actor Producer") \
    .config("spark.jars.packages", ",".join(packages)) \
-   .config("spark.cores.max", "2") \
-   .config("spark.executor.memory", "2g") \
+   .config("spark.cores.max", "1") \
+   .config("spark.executor.memory", "1g") \
    .getOrCreate()
 
 spark.sparkContext.setLogLevel("Error")

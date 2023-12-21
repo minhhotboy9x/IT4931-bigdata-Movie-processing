@@ -27,8 +27,8 @@ spark = SparkSession.builder \
    .master(MASTER) \
    .appName("Movie Producer") \
    .config("spark.jars.packages", ",".join(packages)) \
-   .config("spark.cores.max", "2") \
-   .config("spark.executor.memory", "2g") \
+   .config("spark.cores.max", "1") \
+   .config("spark.executor.memory", "1g") \
    .getOrCreate()
 
 spark.sparkContext.setLogLevel("Error")
@@ -42,7 +42,7 @@ for i in range(1, 10):
     print('________________')
     mv_data = movie.get_movies(page=i)
     df = spark.createDataFrame(mv_data, MOVIE_SCHEMA)
-    df.show()
+    # df.show()
     query = df.selectExpr("CAST(id AS STRING)", "to_json(struct(*)) AS value") \
         .write \
         .format("kafka") \

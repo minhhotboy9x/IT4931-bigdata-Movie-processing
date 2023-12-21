@@ -14,13 +14,21 @@ MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
 ES_NODES = os.environ['ES_NODES']
+USERNAME = os.environ['USERNAME']
+PASSWORD = os.environ['PASSWORD']
 ES_RESOURCE = "movie"
+
 genre_path = 'genres.json'
 
 # -----------------------------------------------------------
 
 def write_to_elasticsearch(df, epoch_id):
     df.select("id", "production_companies").show()
+    df.write.format("mongodb") \
+               .mode("append") \
+               .option("database", "BIGDATA") \
+               .option("collection", "movie") \
+               .save()
     df.write \
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
@@ -37,15 +45,18 @@ packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
     'org.apache.hadoop:hadoop-client:3.0.0',
-    'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16'
+    'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16',
+     "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
 ]
 
 spark = SparkSession.builder \
     .master(MASTER) \
     .appName("Movie Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
-    .config("spark.cores.max", "2") \
-    .config("spark.executor.memory", "2g") \
+    .config(f"spark.mongodb.input.uri", f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net") \
+    .config(f"spark.mongodb.output.uri", f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net") \
+    .config("spark.cores.max", "1") \
+    .config("spark.executor.memory", "1g") \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("Error")

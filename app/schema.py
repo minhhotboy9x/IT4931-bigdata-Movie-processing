@@ -34,7 +34,7 @@ MOVIE_SCHEMA = StructType([
             StructField("iso_3166_1", StringType(), True),
             StructField("name", StringType(), True),
         ])
-    ),nullable=True),
+    ), nullable=True),
     StructField("runtime", StringType(), nullable=True),
     StructField("budget", StringType(), nullable=True),
     StructField("revenue", StringType(), nullable=True),
