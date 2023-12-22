@@ -4,13 +4,14 @@ from pyspark.sql.functions import year, from_json, expr, to_date, col, when
 from pyspark.sql.types import StringType, ArrayType
 import os, json
 from dotenv import load_dotenv
-import requests
+
+
 load_dotenv()
+
 scala_version = '2.12'
-spark_version = '3.5.0'
+spark_version = '3.2.3'
+
 MASTER = os.environ["MASTER"]
-# MASTER = 'spark://192.168.137.1:7077'
-# MASTER = 'spark://172.28.240.1:7077'
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
 ES_NODES = os.environ['ES_NODES']
@@ -24,11 +25,11 @@ genre_path = 'genres.json'
 
 def write_to_elasticsearch(df, epoch_id):
     df.select("id", "production_companies").show()
-    df.write.format("mongodb") \
-               .mode("append") \
-               .option("database", "BIGDATA") \
-               .option("collection", "movie") \
-               .save()
+    # df.write.format("mongodb") \
+    #            .mode("append") \
+    #            .option("database", "BIGDATA") \
+    #            .option("collection", "movie") \
+    #            .save()
     df.write \
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
@@ -44,9 +45,9 @@ def write_to_elasticsearch(df, epoch_id):
 packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
-    'org.apache.hadoop:hadoop-client:3.0.0',
+    'org.apache.hadoop:hadoop-client:3.2.0',
     'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16',
-     "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
+    "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
 ]
 
 spark = SparkSession.builder \

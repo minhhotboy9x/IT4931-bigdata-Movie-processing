@@ -7,9 +7,8 @@ from schema import MOVIE_SCHEMA
 load_dotenv()
 
 scala_version = '2.12'
-spark_version = '3.5.0'
-# MASTER = 'spark://172.28.240.1:7077'
-# MASTER = 'spark://192.168.137.1:7077'
+spark_version = '3.2.3'
+
 MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
@@ -19,8 +18,8 @@ MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
 packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
-    'org.apache.hadoop:hadoop-client:3.0.0',
-    'io.delta:delta-core_2.12:2.2.0'
+    'org.apache.hadoop:hadoop-client:3.2.0',
+    'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16',
 ]
 
 spark = SparkSession.builder \
@@ -42,7 +41,7 @@ for i in range(1, 10):
     print('________________')
     mv_data = movie.get_movies(page=i)
     df = spark.createDataFrame(mv_data, MOVIE_SCHEMA)
-    # df.show()
+    df.show()
     query = df.selectExpr("CAST(id AS STRING)", "to_json(struct(*)) AS value") \
         .write \
         .format("kafka") \

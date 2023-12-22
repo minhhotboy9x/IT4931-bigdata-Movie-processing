@@ -6,11 +6,11 @@ import os, json
 from dotenv import load_dotenv
 
 load_dotenv()
+
 scala_version = '2.12'
-spark_version = '3.5.0'
+spark_version = '3.2.3'
+
 MASTER = os.environ["MASTER"]
-# MASTER = 'spark://spark-master:7077'
-# MASTER = 'spark://172.28.240.1:7077'
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 ACTOR_TOPIC= os.environ["ACTOR_TOPIC"]
 ES_NODES = os.environ['ES_NODES']
@@ -42,9 +42,9 @@ gender_names = {item['id']: item['name'] for item in gender_names}
 packages = [
     f'org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{spark_version}',
     'org.apache.kafka:kafka-clients:3.5.0',
-    'org.apache.hadoop:hadoop-client:3.0.0',
+    'org.apache.hadoop:hadoop-client:3.2.0',
     'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16',
-    "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
+     "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
 ]
 
 spark = SparkSession.builder \
