@@ -25,11 +25,11 @@ genre_path = 'genres.json'
 
 def write_to_elasticsearch(df, epoch_id):
     df.select("id", "production_companies").show()
-    # df.write.format("mongodb") \
-    #            .mode("append") \
-    #            .option("database", "BIGDATA") \
-    #            .option("collection", "movie") \
-    #            .save()
+    df.write.format("mongodb") \
+               .mode("append") \
+               .option("database", "BIGDATA") \
+               .option("collection", "movie") \
+               .save()
     df.write \
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
