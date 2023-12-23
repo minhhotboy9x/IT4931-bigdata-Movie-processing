@@ -14,13 +14,23 @@ MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 ACTOR_TOPIC= os.environ["ACTOR_TOPIC"]
 ES_NODES = os.environ['ES_NODES']
+USERNAME = os.environ['USERNAME_ATLAS']
+PASSWORD = os.environ['PASSWORD_ATLAS']
 ES_RESOURCE = "actor"
 gender_path = 'genders.json'
 
+connection_string = f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net"
 #----------------------------------------------
 
 def write_to_elasticsearch(df, epoch_id):
     df.show()
+    df.write.format("com.mongodb.spark.sql.DefaultSource") \
+            .mode("append") \
+            .option("replaceDocument", "false") \
+            .option("upsert", "true") \
+            .option("database", "BIGDATA") \
+            .option("collection", "actor") \
+            .save()
     df.write \
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
@@ -44,13 +54,15 @@ packages = [
     'org.apache.kafka:kafka-clients:3.5.0',
     'org.apache.hadoop:hadoop-client:3.2.0',
     'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16',
-     "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
+    "org.mongodb.spark:mongo-spark-connector_2.12:3.0.2"
 ]
 
 spark = SparkSession.builder \
     .master(MASTER) \
     .appName("Actor Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
+    .config("spark.mongodb.input.uri", connection_string ) \
+    .config("spark.mongodb.output.uri", connection_string) \
     .config("spark.cores.max", "1") \
     .config("spark.executor.memory", "1g") \
     .getOrCreate()

@@ -30,7 +30,7 @@ spark = SparkSession.builder \
    .config("spark.executor.memory", "1g") \
    .getOrCreate()
 
-spark.sparkContext.setLogLevel("Error")
+spark.sparkContext.setLogLevel("error")
 
 movie = MovieDB()
 mv_data = []

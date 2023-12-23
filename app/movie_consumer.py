@@ -15,21 +15,23 @@ MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
 ES_NODES = os.environ['ES_NODES']
-USERNAME = os.environ['USERNAME']
-PASSWORD = os.environ['PASSWORD']
+USERNAME = os.environ['USERNAME_ATLAS']
+PASSWORD = os.environ['PASSWORD_ATLAS']
 ES_RESOURCE = "movie"
 
-genre_path = 'genres.json'
-
+connection_string = f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net"
 # -----------------------------------------------------------
 
 def write_to_elasticsearch(df, epoch_id):
     df.select("id", "production_companies").show()
-    df.write.format("mongodb") \
-               .mode("append") \
-               .option("database", "BIGDATA") \
-               .option("collection", "movie") \
-               .save()
+    df.write.format("com.mongodb.spark.sql.DefaultSource") \
+            .mode("append") \
+            .option("replaceDocument", "false") \
+            .option("upsert", "true") \
+            .option("database", "BIGDATA") \
+            .option("collection", "movie") \
+            .save()
+    
     df.write \
         .format("org.elasticsearch.spark.sql") \
         .option("es.nodes", ES_NODES) \
@@ -47,15 +49,15 @@ packages = [
     'org.apache.kafka:kafka-clients:3.5.0',
     'org.apache.hadoop:hadoop-client:3.2.0',
     'org.elasticsearch:elasticsearch-spark-30_2.12:7.17.16',
-    "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
+    "org.mongodb.spark:mongo-spark-connector_2.12:3.0.2"
 ]
 
 spark = SparkSession.builder \
     .master(MASTER) \
     .appName("Movie Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
-    .config(f"spark.mongodb.input.uri", f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net") \
-    .config(f"spark.mongodb.output.uri", f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net") \
+    .config("spark.mongodb.input.uri", connection_string ) \
+    .config("spark.mongodb.output.uri", connection_string) \
     .config("spark.cores.max", "1") \
     .config("spark.executor.memory", "1g") \
     .getOrCreate()
