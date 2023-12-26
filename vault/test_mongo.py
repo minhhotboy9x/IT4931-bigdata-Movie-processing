@@ -22,7 +22,8 @@ username = "minhhotboy9x"
 password = "MUvodich"
 
 # Tạo chuỗi kết nối
-connection_string = f"mongodb+srv://{username}:{password}@atlascluster.zdoemtz.mongodb.net/BIGDATA.movie"
+# connection_string = f"mongodb+srv://{username}:{password}@atlascluster.zdoemtz.mongodb.net/BIGDATA.movie"
+connection_string = 'mongodb://localhost:60000/'
 
 # Kết nối đến MongoDB Atlas
 client = MongoClient(connection_string)

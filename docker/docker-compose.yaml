@@ -134,7 +134,103 @@ services:
     depends_on:
       - elasticsearch
     
+  cfgsvr1:
+    container_name: cfgsvr1
+    image: mongo:6.0.12
+    command: mongod --configsvr --replSet cfgrs --port 27017 --dbpath /data/db
+    ports:
+      - 40001:27017
+    volumes:
+      - cfgsvr1:/data/db
+    networks:
+      - spark-network
+
+  shard1svr1: # 11
+    container_name: shard1svr1
+    image: mongo:6.0.12
+    command: mongod --shardsvr --replSet shard1rs --port 27017 --dbpath /data/db
+    ports:
+      - 50001:27017
+    volumes:
+      - shard1svr1:/data/db
+    networks:
+      - spark-network
+
+  shard1svr2: # 12
+    container_name: shard1svr2
+    image: mongo:6.0.12
+    command: mongod --shardsvr --replSet shard1rs --port 27017 --dbpath /data/db
+    ports:
+      - 50002:27017
+    volumes:
+      - shard1svr2:/data/db
+    networks:
+      - spark-network
+    
+  shard1svr3: # 13
+    container_name: shard1svr3
+    image: mongo:6.0.12
+    command: mongod --shardsvr --replSet shard1rs --port 27017 --dbpath /data/db
+    ports:
+      - 50003:27017
+    volumes:
+      - shard1svr3:/data/db
+    networks:
+      - spark-network
+
+  shard2svr1: # 21
+    container_name: shard2svr1
+    image: mongo:6.0.12
+    command: mongod --shardsvr --replSet shard2rs --port 27017 --dbpath /data/db
+    ports:
+      - 50004:27017
+    volumes:
+      - shard2svr1:/data/db
+    networks:
+      - spark-network
+
+  shard2svr2: # 22
+    container_name: shard2svr2
+    image: mongo:6.0.12
+    command: mongod --shardsvr --replSet shard2rs --port 27017 --dbpath /data/db
+    ports:
+      - 50005:27017
+    volumes:
+      - shard2svr2:/data/db
+    networks:
+      - spark-network
+
+  shard2svr3: # 23
+    container_name: shard2svr3
+    image: mongo:6.0.12
+    command: mongod --shardsvr --replSet shard2rs --port 27017 --dbpath /data/db
+    ports:
+      - 50006:27017
+    volumes:
+      - shard2svr3:/data/db
+    networks:
+      - spark-network
+
+  router_mongos:
+    container_name: router_mongos
+    image: mongo:6.0.12
+    command: mongos --configdb cfgrs/cfgsvr1:27017 --port 27017 --bind_ip 0.0.0.0
+    ports:
+      - 60000:27017
+    depends_on:
+      - cfgsvr1
+    networks:
+      - spark-network
 
 networks:
   spark-network:
     driver: bridge
+
+volumes:
+  shard1svr1: {}
+  shard1svr2: {}
+  shard1svr3: {}
+  shard2svr1: {}
+  shard2svr2: {}
+  shard2svr3: {}
+  cfgsvr1: {}
