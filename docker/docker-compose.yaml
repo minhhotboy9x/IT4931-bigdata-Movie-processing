@@ -234,3 +234,5 @@ volumes:
   shard2svr2: {}
   shard2svr3: {}
   cfgsvr1: {}
+
+# 16 containers

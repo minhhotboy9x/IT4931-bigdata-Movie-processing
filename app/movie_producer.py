@@ -12,7 +12,6 @@ spark_version = '3.2.3'
 MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 MOVIE_TOPIC = os.environ["MOVIE_TOPIC"]
-
 # os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages io.delta:delta-core_2.12:2.2.0 --driver-memory 4g pyspark-shell'
 
 packages = [

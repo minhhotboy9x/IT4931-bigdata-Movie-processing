@@ -16,20 +16,20 @@ ACTOR_TOPIC= os.environ["ACTOR_TOPIC"]
 ES_NODES = os.environ['ES_NODES']
 USERNAME = os.environ['USERNAME_ATLAS']
 PASSWORD = os.environ['PASSWORD_ATLAS']
+CONNECTION_STRING = os.environ['CONNECTION_STRING']
 ES_RESOURCE = "actor"
 gender_path = 'genders.json'
 
-connection_string = f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net"
+# connection_string = f"mongodb+srv://{USERNAME}:{PASSWORD}@atlascluster.zdoemtz.mongodb.net"
+# connection_string = f"mongodb://localhost:27017"
 #----------------------------------------------
 
 def write_to_elasticsearch(df, epoch_id):
     df.show()
     df.write.format("com.mongodb.spark.sql.DefaultSource") \
-            .mode("append") \
-            .option("replaceDocument", "false") \
-            .option("upsert", "true") \
             .option("database", "BIGDATA") \
             .option("collection", "actor") \
+            .mode("append") \
             .save()
     df.write \
         .format("org.elasticsearch.spark.sql") \
@@ -61,8 +61,8 @@ spark = SparkSession.builder \
     .master(MASTER) \
     .appName("Actor Consumer") \
     .config("spark.jars.packages", ",".join(packages)) \
-    .config("spark.mongodb.input.uri", connection_string ) \
-    .config("spark.mongodb.output.uri", connection_string) \
+    .config("spark.mongodb.input.uri", CONNECTION_STRING ) \
+    .config("spark.mongodb.output.uri", CONNECTION_STRING) \
     .config("spark.cores.max", "1") \
     .config("spark.executor.memory", "1g") \
     .getOrCreate()

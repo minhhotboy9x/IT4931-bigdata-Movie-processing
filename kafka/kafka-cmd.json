@@ -1,0 +1,9 @@
+{
+    "create_topic_movie": "kafka-topics.sh --bootstrap-server localhost:9092 --create --topic movie --partitions 3 --replication-factor 2",
+    "create_topic_actor": "kafka-topics.sh --bootstrap-server localhost:9092 --create --topic actor --partitions 3 --replication-factor 2",
+    "describe_topic_movie": "kafka-topics.sh --describe --topic movie --bootstrap-server localhost:9092",
+    "describe_topic_actor": "kafka-topics.sh --describe --topic actor --bootstrap-server localhost:9092",
+    "delete_topic_movie": "kafka-topics.sh --delete --topic movie --bootstrap-server localhost:9092",
+    "delete_topic_actor": "kafka-topics.sh --delete --topic actor --bootstrap-server localhost:9092",
+    "check_broker": "kafka-broker-api-versions.sh --bootstrap-server broker-1:9092"
+}

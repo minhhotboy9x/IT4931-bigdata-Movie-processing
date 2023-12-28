@@ -12,7 +12,7 @@ spark_version = '3.2.3'
 MASTER = os.environ["MASTER"]
 KAFKA_BROKER1 = os.environ["KAFKA_BROKER1"]
 ACTOR_TOPIC = os.environ["ACTOR_TOPIC"]
-
+REPLICATION = os.environ["REPLICATION"]
 # os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages io.delta:delta-core_2.12:2.2.0 --driver-memory 4g pyspark-shell'
 
 packages = [
@@ -47,5 +47,4 @@ for i in range(1, 10):
         .format("kafka") \
         .option("kafka.bootstrap.servers", KAFKA_BROKER1) \
         .option("topic", ACTOR_TOPIC) \
-        .option("kafka.acks", "all") \
         .save()
