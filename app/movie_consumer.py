@@ -6,7 +6,7 @@ import os, json
 from dotenv import load_dotenv
 
 
-load_dotenv()
+load_dotenv('variables.env')
 
 scala_version = '2.12'
 spark_version = '3.2.3'
@@ -24,7 +24,7 @@ ES_RESOURCE = "movie"
 # connection_string = f"mongodb://localhost:27017"
 # -----------------------------------------------------------
 
-def write_to_elasticsearch(df, epoch_id):
+def write_to_elasticsearch_mongodb(df, epoch_id):
     df.select("id", "production_companies").show()
     df.write.format("com.mongodb.spark.sql.DefaultSource") \
             .mode("append") \
@@ -100,7 +100,7 @@ df_movie = df_movie.withColumn(
 
 query = df_movie.writeStream \
     .outputMode("append") \
-    .foreachBatch(write_to_elasticsearch) \
+    .foreachBatch(write_to_elasticsearch_mongodb) \
     .start()
 
 query.awaitTermination()

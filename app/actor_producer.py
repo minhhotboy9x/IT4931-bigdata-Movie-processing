@@ -4,7 +4,7 @@ import os, json
 from crawler import MovieDB
 from schema import ACTOR_SCHEMA
 
-load_dotenv()
+load_dotenv('variables.env')
 
 scala_version = '2.12'
 spark_version = '3.2.3'

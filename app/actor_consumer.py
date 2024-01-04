@@ -5,7 +5,7 @@ from pyspark.sql.types import StringType, ArrayType
 import os, json
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv('variables.env')
 
 scala_version = '2.12'
 spark_version = '3.2.3'
@@ -24,7 +24,7 @@ gender_path = 'genders.json'
 # connection_string = f"mongodb://localhost:27017"
 #----------------------------------------------
 
-def write_to_elasticsearch(df, epoch_id):
+def write_to_elasticsearch_mongodb(df, epoch_id):
     df.show()
     df.write.format("com.mongodb.spark.sql.DefaultSource") \
             .option("database", "BIGDATA") \
@@ -95,7 +95,7 @@ df_actor = df_actor.withColumn('gender', expr("map_gender_id_to_name(gender)"))
 
 query = df_actor.writeStream \
     .outputMode("append") \
-    .foreachBatch(write_to_elasticsearch) \
+    .foreachBatch(write_to_elasticsearch_mongodb) \
     .start()
 
 query.awaitTermination()
