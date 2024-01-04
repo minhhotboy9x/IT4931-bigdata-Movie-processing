@@ -64,7 +64,7 @@ spark = SparkSession.builder \
 
 spark.sparkContext.setLogLevel("Error")
 
-# Read streaming data with watermark
+
 df_msg = spark \
     .readStream \
     .format("kafka") \

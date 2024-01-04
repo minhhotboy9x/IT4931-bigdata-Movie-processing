@@ -75,7 +75,7 @@ def map_gender_id_to_name(gender_id):
 # Định nghĩa hàm UDF từ hàm Python
 spark.udf.register("map_gender_id_to_name", map_gender_id_to_name, StringType())
 
-# Read streaming data with watermark
+
 df_msg = spark \
     .readStream \
     .format("kafka") \
