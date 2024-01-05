@@ -2,3 +2,4 @@ pymongo==4.6.1
 pyspark==3.2.3
 python-dotenv==1.0.0
 Requests==2.31.0
+py4j
