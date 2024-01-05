@@ -1,7 +1,7 @@
 # IT4931-bigdata-Movie-processing
 Course project.
 
-The crawled movie data is streamed and processed by Kafka and PySpark. Storing data in MongoDB and visualizing by Elasticsearch Kibana. All the processes run in docker on win10. 
+The crawled movie data is streamed and processed by Kafka and PySpark. Storing data in MongoDB and visualizing by Elasticsearch Kibana. All the processes run on docker-compose windows 10. 
 
 ### Install (window local machine)
 Docker, MongoDB, Pyspark
